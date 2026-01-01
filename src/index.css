@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Optional global styles */
+@layer base {
+  body {
+    background-color: #fdf8f1;
+    @apply text-black font-sans;
+    margin: 0;
+    padding: 0;
+  }
+}
