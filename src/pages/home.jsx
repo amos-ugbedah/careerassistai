@@ -5,45 +5,35 @@ import FeaturedArticles from "../components/FeaturedArticles";
 import Templates from "../components/Templates"; 
 
 export default function Home() {
-  const [latestArticles, setLatestArticles] = useState([]);
-  const [latestTemplates, setLatestTemplates] = useState([]);
+  const [data, setData] = useState({ articles: [], templates: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchHomeData = async () => {
+    async function fetchHomeContent() {
       try {
-        // Fetch Top 3 Articles
-        const { data: arts } = await supabase
-          .from("articles")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(3);
+        const [arts, temps] = await Promise.all([
+          supabase.from("articles").select("*").order("created_at", { ascending: false }).limit(3),
+          supabase.from("templates").select("*").order("created_at", { ascending: false }).limit(4)
+        ]);
 
-        // Fetch Top 4 Templates
-        const { data: temps } = await supabase
-          .from("templates")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(4);
-
-        setLatestArticles(arts || []);
-        setLatestTemplates(temps || []);
+        setData({
+          articles: arts.data || [],
+          templates: temps.data || []
+        });
       } catch (err) {
-        console.error("Home Data Load Error:", err);
+        console.error("Critical: Failed to load home content", err);
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchHomeData();
+    }
+    fetchHomeContent();
   }, []);
 
   return (
     <div className="bg-[#f8f5ee]">
-      {/* 1. Impactful Hero Section */}
       <Hero />
 
-      {/* 2. Dynamic Articles Section - ADDED ID="tools" */}
+      {/* Editorial Insights Section */}
       <section id="tools" className="py-20 scroll-mt-20">
         <div className="px-6 mx-auto max-w-7xl">
           <div className="flex items-end justify-between mb-12">
@@ -57,16 +47,16 @@ export default function Home() {
           </div>
 
           {loading ? (
-             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-               {[1, 2, 3].map(i => <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-[2rem]"></div>)}
-             </div>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              {[1, 2, 3].map(i => <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-[2rem]" />)}
+            </div>
           ) : (
-            <FeaturedArticles articles={latestArticles} />
+            <FeaturedArticles articles={data.articles} />
           )}
         </div>
       </section>
 
-      {/* 3. Dynamic Templates Section - ADDED ID="templates" */}
+      {/* Premium Resources Section */}
       <section id="templates" className="bg-[#1a1a1a] py-24 rounded-t-[4rem] md:rounded-t-[6rem] scroll-mt-20">
         <div className="px-6 mx-auto max-w-7xl">
           <div className="mb-16 text-center">
@@ -76,10 +66,10 @@ export default function Home() {
 
           {loading ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-               {[1, 2, 3, 4].map(i => <div key={i} className="h-48 bg-white/5 animate-pulse rounded-3xl"></div>)}
+               {[1, 2, 3, 4].map(i => <div key={i} className="h-48 bg-white/5 animate-pulse rounded-3xl" />)}
             </div>
           ) : (
-            <Templates templates={latestTemplates} />
+            <Templates templates={data.templates} />
           )}
 
           <div className="mt-16 text-center">
